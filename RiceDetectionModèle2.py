@@ -1,12 +1,12 @@
 import keras
 import tensorflow as tf
 from keras.layers import Dense, Flatten,Activation,Dropout
-from keras.applications import MobileNet , InceptionResNetV2
+from keras.applications import MobileNet , InceptionResNetV2,InceptionV3
 from keras.metrics import categorical_crossentropy
 # from keras.preprocessing.image import ImageDataGenerator
 from keras import models, layers, optimizers
 
-base_model=InceptionResNetV2(
+base_model=InceptionV3(
     input_shape=(256,256,3),
     include_top=False 
     )
