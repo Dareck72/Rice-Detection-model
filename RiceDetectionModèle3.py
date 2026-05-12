@@ -1,24 +1,20 @@
 import keras
 import tensorflow as tf
 from keras.layers import Dense, Flatten,Activation,Dropout
-from keras.applications import MobileNet,imagenet_utils,VGG16,VGG19,ResNet101
+from keras.applications import EfficientNetV2B0
 from keras.metrics import categorical_crossentropy
 # from keras.preprocessing.image import ImageDataGenerator
 from keras import models, layers, optimizers
 
-base_model=MobileNet(
-                       weights='imagenet',
-                    #  couper la tête du modèle pour ne pas inclure les couches de classification
-                    
-                     include_top=False,
-                    #  Cest la taille d'entré des images dans le modèle MobileNet
-                    
-                     input_shape=(256,256,3)
-                     
-                    )
+
+base_model=EfficientNetV2B0(
+    input_shape=(256,256,3),
+    include_top=False 
+    )
 
 # permet dd geler le corps c'est a dire le corp de modèle pour qu'il utilise ces connaissances apprise sur les données d'entrainement 
 base_model.trainable=False
+
 
 model=models.Sequential([
     
@@ -35,8 +31,9 @@ model=models.Sequential([
     layers.Dropout(0.5),
     layers.Dense(4,activation='softmax') 
        
-    
 ])
+
+
 
 model.compile(optimizer='adam',loss='categorical_crossentropy',metrics=['accuracy'])
 
@@ -45,21 +42,22 @@ Train_label_dir="dataset/RiceDiseaseDataset/train"
 trainds=keras.utils.image_dataset_from_directory(
     directory=Train_label_dir,
   labels = "inferred",
-  seed=123,
-  subset="training",
   validation_split=0.2,
+  subset="training",
+  seed=123,
   image_size=(256, 256),
   batch_size=32,
   label_mode='categorical',
 )
 
+
 validationds=keras.utils.image_dataset_from_directory(
  directory=Train_label_dir,
   labels = "inferred",
-  image_size=(256, 256),
-  batch_size=32,
   subset="validation",
+  image_size=(256, 256),
   validation_split=0.2,
+  batch_size=32,
   seed=123,
   label_mode='categorical',
 )
@@ -68,29 +66,25 @@ validationds=keras.utils.image_dataset_from_directory(
 
 from keras.callbacks import EarlyStopping
 
-early_stopping= EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+early_stopping= EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+
 
 # entrainement du model
 model.fit(
 trainds,
 validation_data = validationds,
-epochs=150,
-callbacks=[early_stopping]  
+epochs=180
+,
+ callbacks=[early_stopping]  
 )
-# model.predict(validationds)
+
+
+model.save("NewModel_ofEfficientNetV2B0.keras")
+
 
 import matplotlib.pyplot as plt
 plt.plot(model.history.history['accuracy'], label='accuracy')
-
 plt.plot(model.history.history['val_accuracy'], label='val_accuracy')
 plt.legend()
 plt.show()
-
-model.save('NewRiceDetectionModel.keras'),
-
-
-
-
-
-
 
